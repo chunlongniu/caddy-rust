@@ -6,7 +6,7 @@ use cmd::{buildup_cli};
 fn main() {
     let args: Vec<String> = env::args().collect();
     match buildup_cli(&args) {
-        Ok(cli) => cli.execute(),
+        Ok(cli) => cli.execute(&args),
         Err(e) => println!("error {:?}", e),
     }
 }

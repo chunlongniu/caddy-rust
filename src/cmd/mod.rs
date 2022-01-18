@@ -1,4 +1,7 @@
 use std::io;
+mod command;
+
+use command::{SubCommandHelp, StartCommand};
 static USAGE: &'static str = 
 "usage:
     caddy <command> [<args>...]
@@ -58,6 +61,7 @@ fn pickup_cmd_params(args :&Vec<String>, index: usize, default: &str) -> String 
     }
 }
 
+
 impl Cli {
 
     pub fn new(args: &Vec<String>) -> Self {
@@ -73,13 +77,17 @@ impl Cli {
         }
     }
 
-    pub fn execute(&self) {
+    pub fn execute(&self, args: &Vec<String>) {
         let command: &str = &self.command;
         match command {
             "version" =>
                 self.echo_version(),
             "help" =>
                 self.echo_usage(),
+            "start" => {
+                let mut sub_cmd = StartCommand::new();
+                sub_cmd.execute(args);
+            },
             _ => self.echo_usage(),
         }
     }
