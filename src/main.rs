@@ -1,10 +1,12 @@
 mod cmd;
 mod events;
 use std::env;
-use cmd::Cli;
+use cmd::{buildup_cli};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let cli = Cli::new(&args);
-    cli.execute();
+    match buildup_cli(&args) {
+        Ok(cli) => cli.execute(),
+        Err(e) => println!("error {:?}", e),
+    }
 }

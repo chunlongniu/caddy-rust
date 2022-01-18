@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 pub trait Handler {
   //  fn adapt(&self) -> Result<u8, u8>;
   //  fn add_package(&self) -> Result<u8, u8>;

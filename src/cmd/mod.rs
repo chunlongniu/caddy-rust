@@ -1,8 +1,4 @@
-mod vars;
 use std::io;
-use std::collections::HashMap;
-use vars::Command;
-
 static USAGE: &'static str = 
 "usage:
     caddy <command> [<args>...]
@@ -42,50 +38,48 @@ pub trait CommandLine {
 pub struct Cli {
     command: String,
     version: String,
-    cfg_file: Result<String, u8>, 
-    cmd_action_map: HashMap<String, Command>,
+    cfg_file: String, 
     usage: String
 }
 
-fn parse_direct(args: &Vec<String>) -> String {
-    let mut command = String::from("start");
-    if args.len()  > 2 {
-        command = String::from(&args[1]);
+pub fn buildup_cli(args: &Vec<String>) -> Result<Cli, &'static str> {
+    if args.len()  > 1 {
+        let cli = Cli::new(args);
+        return Ok(cli); 
     }
-    command
+    Err("No arguments provided by OS: args[0] must be command")
 }
 
-fn parse_cfg_file(args: &Vec<String>) -> Result<String, u8> {
-    if args.len()  > 3 {
-        let cfg_file = String::from(&args[2]);
-        return Ok(cfg_file);
+fn pickup_cmd_params(args :&Vec<String>, index: usize, default: &str) -> String  {
+    let arg = args.get(index);
+    match arg {
+        Some(value) => String::from(value),
+        None => String::from(default),
     }
-    Err(0)
-}
-
-fn init_cmd_action_map(cmd_actions :&mut HashMap<String, Command>) {
-    cmd_actions.insert("start".to_string(), Command::START);
-    cmd_actions.insert("version".to_string(), Command::VERSION("1.0".to_string()));
-    cmd_actions.insert("help".to_string(), Command::HELP("help".to_string()));
 }
 
 impl Cli {
 
-    pub fn new(args: &Vec<String>) -> Cli {
-        let command = self::parse_direct(args);
-        let cfg_file = self::parse_cfg_file(args);
-        let cmd_action_map = HashMap::<String, Command>::new();
+    pub fn new(args: &Vec<String>) -> Self {
+        
+        let command = pickup_cmd_params(args, 1, "start");
+        let cfg_file = pickup_cmd_params(args, 2, "./Caddyfile");
+
         Cli {
             command: String::from(command),
             cfg_file: cfg_file,
             usage: String::from(USAGE), 
-            cmd_action_map: cmd_action_map,
-            version: String::from("1.0.0"),
+            version: String::from("v1.0.0"),
         }
     }
 
     pub fn execute(&self) {
-        match self.command.to_string() {
+        let command: &str = &self.command;
+        match command {
+            "version" =>
+                self.echo_version(),
+            "help" =>
+                self.echo_usage(),
             _ => self.echo_usage(),
         }
     }
@@ -97,12 +91,4 @@ impl Cli {
     fn echo_version(&self) {
         println!("{}", self.version)
     }
-}
-
-impl CommandLine for Cli {
-
-    fn parse(&self) -> io::Result<()>{
-        Ok(())
-    }
-
 }
