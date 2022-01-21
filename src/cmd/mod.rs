@@ -85,7 +85,7 @@ impl Cli {
             "help" =>
                 self.echo_usage(),
             "start" => {
-                let mut sub_cmd = StartCommand::new();
+                let sub_cmd = StartCommand::new();
                 sub_cmd.execute(args);
             },
             _ => self.echo_usage(),

@@ -1,3 +1,4 @@
+use regex::Regex;
 pub enum Flag {
     StrEntity(String, String, String),
     BoolEntity(String, bool, String),
@@ -43,19 +44,27 @@ impl StartCommand {
                     "watch".to_string(),
                     false,
                     "Reload changed config file automatically".to_string()),
-            ],
+            ],}
     }
-    }
+
+    pub fn assign_value_to_flags(&self, options: String) {
+        let cmd_line_args = &options;
+        let re = Regex::new(r"[--(\w+\s+\w+)]*").unwrap();
+        println!("---");
+        for cap in re.captures_iter(cmd_line_args) {
+            println!("{:?}", cap); 
+        }
+    } 
 }
 
 mod common {
     pub fn parse_flags(flags: &Vec<super::Flag>) {
-        for option in flags {
-            match option {
-                super::Flag::StrEntity(opt, val, desc) => {
+        for flag in flags {
+            match flag {
+                super::Flag::StrEntity(opt, _, desc) => {
                     println!("  --{} string \n \t {}", opt, desc);
                 },
-                super::Flag::BoolEntity(opt, val, desc) => {
+                super::Flag::BoolEntity(opt, _, desc) => {
                     println!("  --{} \n \t {}", opt, desc);
                 },
             }
@@ -79,7 +88,10 @@ impl SubCommandHelp for StartCommand {
             let m_flag: &str = &flag;
             match m_flag {
                 "--help" => self.help(),
-                _ => println!("others ..."),
+                _ => {
+                    self.assign_value_to_flags(sub_cmd_flags.join(" "));
+                    break;
+                }
             }
         }
         
