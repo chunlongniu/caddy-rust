@@ -1,7 +1,8 @@
-use std::io;
-mod command;
-
-use command::{SubCommandHelp, StartCommand};
+//use std::io;
+mod commands;
+mod start_cmd;
+use start_cmd::{StartCommand};
+use commands::{Command};
 static USAGE: &'static str = 
 "usage:
     caddy <command> [<args>...]
@@ -33,18 +34,13 @@ Full documentation is available at:
 https://caddyserver.com/docs/command-line
 ";
 
-pub trait CommandLine {
-
-    fn parse(&self) -> io::Result<()>;    
-} 
-
-pub struct Cli {
-    command: String,
+pub struct Cli<'a>{
+    sub_cmd: Command<'a>,
     version: String,
     usage: String
 }
 
-pub fn buildup_cli(args: &Vec<String>) -> Result<Cli, &'static str> {
+pub fn build_cmd_cli(args: &Vec<String>) -> Result<Cli, &'static str> {
     if args.len()  > 1 {
         let cli = Cli::new(args);
         return Ok(cli); 
@@ -60,40 +56,31 @@ fn pickup_cmd_params(args :&Vec<String>, index: usize, default: &str) -> String 
     }
 }
 
+impl <'a> Cli<'a> {
 
-impl Cli {
-
-    pub fn new(args: &Vec<String>) -> Self {
-        
-        let command = pickup_cmd_params(args, 1, "start");
+    pub fn new(args: &'a Vec<String>) -> Self {
 
         Cli {
-            command: String::from(command),
+            sub_cmd: Command::new(args),
             usage: String::from(USAGE), 
             version: String::from("v1.0.0"),
         }
     }
 
     pub fn execute(&self, args: &Vec<String>) {
-        let command: &str = &self.command;
-        match command {
+        let sub_cmd: &str = &pickup_cmd_params(args, 1, "start");
+        match sub_cmd {
             "version" =>
-                self.echo_version(),
+                println!("{}", self.version),
             "help" =>
-                self.echo_usage(),
+                println!("{}", self.usage),
             "start" => {
-                let sub_cmd = StartCommand::new();
-                sub_cmd.execute(args);
+                let start_cmd = StartCommand::new();
+                self.sub_cmd.execute(&start_cmd);
             },
-            _ => self.echo_usage(),
+            _ => {
+                println!("[ERROR] {:?} is not a recognized sub command; see 'caddy help'", args.get(1).unwrap());
+            },
         }
-    }
-
-    fn echo_usage(&self) {
-        println!("{}", self.usage)
-    }
-
-    fn echo_version(&self) {
-        println!("{}", self.version)
     }
 }

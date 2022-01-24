@@ -1,26 +1,25 @@
-use cmd::{
-    Command,
-    SubCommandHelp,
-    Flag,
-};
+use super::commands::{Flag, SubCommandHelp};
 
 pub struct StartCommand {
     cmd: String,
-    flags: Vec<String>,
+    flags: Vec<&'static str>,
+    flagset: Vec<Flag>,
 }
 
 impl StartCommand {
 
-    fn new() -> Self {
-        cmd: "start".to_string(),
-        flags: vec!["--config", "--envfile", "--adapter", "--pidfile", "--watch"],
+    pub fn new() -> Self {
+        StartCommand {
+            cmd: "start".to_string(),
+            flags: vec!["--config", "--envfile", "--adapter", "--pidfile", "--watch"],
+            flagset: vec![],
+        }
     }
 }
 
-impl StartCommand for SubCommandHelp {
+impl  SubCommandHelp for StartCommand {
 
-    fn help(&self) {
+    fn execute(&self) {
 
     }
-
 }
