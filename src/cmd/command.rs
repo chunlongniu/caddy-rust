@@ -115,4 +115,8 @@ impl SubCommandHelp for StartCommand {
         }
         
     }
+
+    fn get_name(&self)-> String {
+        return self.name;
+    }
 }

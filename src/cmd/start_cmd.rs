@@ -1,8 +1,8 @@
 use super::commands::{Flag, SubCommandHelp};
 
 pub struct StartCommand {
-    cmd: String,
-    flags: Vec<&'static str>,
+    name: String,
+    flags: Vec<String>,
     flagset: Vec<Flag>,
 }
 
@@ -10,8 +10,12 @@ impl StartCommand {
 
     pub fn new() -> Self {
         StartCommand {
-            cmd: "start".to_string(),
-            flags: vec!["--config", "--envfile", "--adapter", "--pidfile", "--watch"],
+            name: "start".to_string(),
+            flags: vec!["--config".to_string(),
+                        "--envfile".to_string(),
+                        "--adapter".to_string(),
+                        "--pidfile".to_string(),
+                        "--watch".to_string()],
             flagset: vec![],
         }
     }
@@ -21,5 +25,12 @@ impl  SubCommandHelp for StartCommand {
 
     fn execute(&self) {
 
+    }
+    fn get_flags(&self) -> Option<&Vec<String>> {
+        return Some(&self.flags);
+    }
+
+    fn get_name(&self) -> &String {
+        &self.name
     }
 }

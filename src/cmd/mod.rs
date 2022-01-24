@@ -67,7 +67,7 @@ impl <'a> Cli<'a> {
         }
     }
 
-    pub fn execute(&self, args: &Vec<String>) {
+    pub fn execute(&mut self, args: &Vec<String>) {
         let sub_cmd: &str = &pickup_cmd_params(args, 1, "start");
         match sub_cmd {
             "version" =>
@@ -75,8 +75,8 @@ impl <'a> Cli<'a> {
             "help" =>
                 println!("{}", self.usage),
             "start" => {
-                let start_cmd = StartCommand::new();
-                self.sub_cmd.execute(&start_cmd);
+                let mut start_cmd = StartCommand::new();
+                self.sub_cmd.execute(&mut start_cmd);
             },
             _ => {
                 println!("[ERROR] {:?} is not a recognized sub command; see 'caddy help'", args.get(1).unwrap());
