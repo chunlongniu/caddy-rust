@@ -41,7 +41,6 @@ pub trait CommandLine {
 pub struct Cli {
     command: String,
     version: String,
-    cfg_file: String, 
     usage: String
 }
 
@@ -67,11 +66,9 @@ impl Cli {
     pub fn new(args: &Vec<String>) -> Self {
         
         let command = pickup_cmd_params(args, 1, "start");
-        let cfg_file = pickup_cmd_params(args, 2, "./Caddyfile");
 
         Cli {
             command: String::from(command),
-            cfg_file: cfg_file,
             usage: String::from(USAGE), 
             version: String::from("v1.0.0"),
         }
