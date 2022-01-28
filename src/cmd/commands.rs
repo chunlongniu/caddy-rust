@@ -3,8 +3,8 @@ use std::collections::HashMap;
 
 #[derive(Debug)]
 pub enum Flag {
-    StrEntity(String, String, String),
-    BoolEntity(String, bool, String),
+    StrEntity{_name: String, _value: String, _desc: String},
+    BoolEntity{_name: String, _value: bool, _desc: String},
 }
 
 pub struct Command<'a> {
@@ -13,7 +13,7 @@ pub struct Command<'a> {
 }
 
 pub trait SubCommandHelp{
-    fn execute(&self);
+    fn execute(&self, cmd_flags: &mut HashMap<String, Flag>);
     fn get_name(&self)-> &String;
     fn get_flags(&self)-> Option<&Vec<String>>;
 }
@@ -25,35 +25,35 @@ impl<'a> Command<'a> {
             args: args,
             flags: HashMap::from([
                 ("--config".to_string(),
-                 Flag::StrEntity(
-                    "config".to_string(),
-                    "".to_string(),
-                    "Configuration file".to_string()),
-                 ),
+                 Flag::StrEntity{
+                   _name: "config".to_string(),
+                   _value: "".to_string(),
+                   _desc: "Configuration file".to_string()
+                }),
                 ("--envfile".to_string(),
-                 Flag::StrEntity(
-                    "envfile".to_string(),
-                    "".to_string(),
-                    "Environment file to load".to_string()),
-                ),
+                 Flag::StrEntity{
+                  _name:  "envfile".to_string(),
+                  _value: "".to_string(),
+                  _desc:  "Environment file to load".to_string()
+                }),
                 ("--adapter".to_string(),
-                 Flag::StrEntity(
-                    "adapter".to_string(),
-                    "".to_string(),
-                    "Name of config adapter to apply".to_string()),
-                ),
+                 Flag::StrEntity{
+                  _name:  "adapter".to_string(),
+                  _value: "".to_string(),
+                  _desc:  "Name of config adapter to apply".to_string()
+                 }),
                 ("--pidfile".to_string(),
-                Flag::StrEntity(
-                    "pidfile".to_string(),
-                    "".to_string(),
-                    "Path of file to which to write process ID".to_string()),
-                ),
+                Flag::StrEntity{
+                   _name:  "pidfile".to_string(),
+                   _value: "".to_string(),
+                   _desc:  "Path of file to which to write process ID".to_string()
+                }),
                 ("--watch".to_string(),
-                Flag::BoolEntity(
-                    "watch".to_string(),
-                    false,
-                    "Reload changed config file automatically".to_string()),
-                )]
+                Flag::BoolEntity{
+                    _name: "watch".to_string(),
+                    _value: false,
+                    _desc: "Reload changed config file automatically".to_string()}),
+                ]
             )
         }
     }
@@ -74,7 +74,7 @@ impl<'a> Command<'a> {
     }
 
     fn set_cmd_flags(&mut self, in_opts: &Vec<String>,
-        flags:&Vec<String>) {
+        flags:&Vec<String>) -> Result<i32, i32> {
 
         let mut cache_flags: Vec<(&str, Option<&str>)> = vec![];
         for in_opt in in_opts {
@@ -82,16 +82,20 @@ impl<'a> Command<'a> {
             match dict.len() {
                 1 => {
                     let opt = dict.get(0).unwrap();
-                    if !flags.contains(&opt.to_string()) {
-
+                    if !flags.contains(&opt.to_string()) || 
+                        !self.flags.contains_key(&opt.to_string()) {
+                        println!("Invalid option {} in command line", opt);
+                        return Err(-1);
                     }
                     cache_flags.push((*opt, None));
                 },
                 2 => {
                     let (opt, val) = (dict.get(0).unwrap(),
                                     dict.get(1).unwrap());
-                    if !flags.contains(&opt.to_string()) {
-
+                    if !flags.contains(&opt.to_string()) || 
+                        !self.flags.contains_key(&opt.to_string()){
+                        println!("Invalid option {} in command line", opt);
+                        return Err(-1);
                     }
                     cache_flags.push((*opt, Some(*val)));
                 },
@@ -100,6 +104,7 @@ impl<'a> Command<'a> {
             }
         }
         self.filter_and_assigned_opts(&cache_flags);
+        Ok(0)
     }
 
     fn filter_and_assigned_opts(&mut self, _flags: &Vec<(&str, Option<&str>)>) {
@@ -107,13 +112,14 @@ impl<'a> Command<'a> {
             let (opt, val) = flag ;
             if let Some(entity) = self.flags.get_mut(&opt.to_string()) {
                 match entity{
-                    Flag::StrEntity(_opt, _val, _desc) => {
+                    Flag::StrEntity{_name, _value, _desc} => {
                         if let Some(_in_val) = val {
-                            println!("{:?}", entity);
+                            *_value = String::from(*_in_val);
                         }
                     },
-                    Flag::BoolEntity(_opt, _, _desc) => {
-                        println!("{}", opt);
+                    Flag::BoolEntity{_name, _value, _desc} => {
+                        *_value = true;
+                        println!("{:?}", entity);
                     },
                 }
             }
@@ -124,7 +130,16 @@ impl<'a> Command<'a> {
         let opts = self.parse_flags();
         if let Ok(in_opts) = opts {
             if let Some(flags) = cmd.get_flags() {
-                self.set_cmd_flags(&in_opts, flags);
+                match self.set_cmd_flags(&in_opts, flags) {
+                    Err(-1) => {
+                        self.help(cmd);
+                    },
+                    Ok(0) => {
+                        cmd.execute(&mut self.flags);
+                    },
+                    _ => {
+                    }
+                }
             } else {
                 self.help(cmd);
             }
@@ -134,15 +149,15 @@ impl<'a> Command<'a> {
     }
 
     pub fn help<T>(&self, cmd: &T) where T: SubCommandHelp {
-        println!("Usage of {}", cmd.get_name());
+        println!("Usage of subcommand {}: ", cmd.get_name());
         if let Some(flags) = cmd.get_flags() {
             for flag in flags {
                 match self.flags.get(flag).unwrap() {
-                    Flag::StrEntity(_, _, desc) => {
-                        println!("  {:16}{}", flag, desc);    
+                    Flag::StrEntity{_name, _value, _desc} => {
+                        println!("  {:16}{}", flag, _desc);    
                     }
-                    Flag::BoolEntity(_, _, desc) => {
-                        println!("  {:16}{}", flag, desc);    
+                    Flag::BoolEntity{_name, _value, _desc} => {
+                        println!("  {:16}{}", flag, _desc);    
                     }
                 }
             }

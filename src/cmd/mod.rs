@@ -1,5 +1,6 @@
 //use std::io;
 mod commands;
+mod error;
 mod start_cmd;
 use start_cmd::{StartCommand};
 use commands::{Command};

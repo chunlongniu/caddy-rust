@@ -1,4 +1,5 @@
 use super::commands::{Flag, SubCommandHelp};
+use std::collections::HashMap;
 
 pub struct StartCommand {
     name: String,
@@ -23,7 +24,7 @@ impl StartCommand {
 
 impl  SubCommandHelp for StartCommand {
 
-    fn execute(&self) {
+    fn execute(&mut self, cmd_flags: &mut HashMap<String, Flag>) {
 
     }
     fn get_flags(&self) -> Option<&Vec<String>> {
