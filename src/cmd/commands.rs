@@ -51,11 +51,27 @@ impl<'a> Command<'a> {
                    _value: "".to_string(),
                    _desc:  "Path of file to which to write process ID".to_string()
                 }),
+                ("--pingback".to_string(),
+                Flag::StrEntity{
+                   _name:  "pingback".to_string(),
+                   _value: "".to_string(),
+                   _desc:  "Echo confirmation bytes to this address on success".to_string()
+                }),
                 ("--watch".to_string(),
                 Flag::BoolEntity{
                     _name: "watch".to_string(),
                     _value: false,
                     _desc: "Reload changed config file automatically".to_string()}),
+                ("--resume".to_string(),
+                Flag::BoolEntity{
+                    _name: "resume".to_string(),
+                    _value: false,
+                    _desc: "Use saved config, if any(and prefer over --config file)".to_string()}),
+                ("--environ".to_string(),
+                Flag::BoolEntity{
+                    _name: "environ".to_string(),
+                    _value: false,
+                    _desc: "Print environment".to_string()}),
                 ]
             )
         }
@@ -63,7 +79,7 @@ impl<'a> Command<'a> {
 
     fn parse_flags(&mut self) -> Result<Vec<String>, i32>{
         let opts_in_line = &self.args[2..].join(" ");
-        let re = Regex::new(r"(--\w+\s*[a-zA-Z]*)").unwrap();
+        let re = Regex::new(r"(--\w+\s*[a-zA-Z0-9.:]*)").unwrap();
         let mut opts: Vec<String> = vec![];
 
         for cap in re.captures_iter(opts_in_line) {
@@ -78,7 +94,6 @@ impl<'a> Command<'a> {
 
     fn set_cmd_flags(&mut self, in_opts: &Vec<String>,
         flags:&Vec<String>) -> Result<i32, i32> {
-
         let mut cache_flags: Vec<(&str, Option<&str>)> = vec![];
         for in_opt in in_opts {
             let dict = in_opt.split(' ').collect::<Vec<&str>>();

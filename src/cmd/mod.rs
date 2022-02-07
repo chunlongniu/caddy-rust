@@ -2,7 +2,9 @@
 mod commands;
 mod error;
 mod start_cmd;
+mod run_cmd;
 use self::start_cmd::{StartCommand};
+use self::run_cmd::{RunCommand};
 use commands::{Command};
 static USAGE: &'static str = 
 "usage:
@@ -76,9 +78,14 @@ impl <'a> Cli<'a> {
             "help" =>
                 println!("{}", self.usage),
             "start" => {
-                let mut start_cmd = StartCommand::new();
-                self.sub_cmd.execute(&mut start_cmd);
+                let mut cmd = StartCommand::new();
+                self.sub_cmd.execute(&mut cmd);
             },
+            "run" => {
+                let mut cmd = RunCommand::new();
+                self.sub_cmd.execute(&mut cmd);
+            },
+
             _ => {
                 println!("[ERROR] {:?} is not a recognized sub command; see 'caddy help'", args.get(1).unwrap());
             },
