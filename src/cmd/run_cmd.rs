@@ -42,7 +42,7 @@ impl RunCommand {
     fn read_pinback_flag(&self, _cmd_flags: &HashMap<String, Flag>) {
         let entry = _cmd_flags.get("--pingback").unwrap(); 
         let mut ip_addr = "";
-        if let Flag::StrEntity{_name, _value, _desc} = entry {
+        if let Flag::StrEntry{_name, _value, _desc} = entry {
             ip_addr = &_value;
         }
         println!("=== {}", ip_addr);
