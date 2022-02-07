@@ -2,7 +2,7 @@
 mod commands;
 mod error;
 mod start_cmd;
-use start_cmd::{StartCommand};
+use self::start_cmd::{StartCommand};
 use commands::{Command};
 static USAGE: &'static str = 
 "usage:

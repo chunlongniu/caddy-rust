@@ -12,11 +12,14 @@ pub struct Command<'a> {
     flags: HashMap<String, Flag>,
 }
 
+pub type ValidFlagFn = fn(flag: &Flag) -> Result<i32, i32>;
+
 pub trait SubCommandHelp{
-    fn execute(&self, cmd_flags: &mut HashMap<String, Flag>);
+    fn execute(&mut self, cmd_flags: &mut HashMap<String, Flag>);
     fn get_name(&self)-> &String;
     fn get_flags(&self)-> Option<&Vec<String>>;
 }
+
 
 impl<'a> Command<'a> {
 
